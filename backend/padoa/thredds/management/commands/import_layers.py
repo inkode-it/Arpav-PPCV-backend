@@ -20,6 +20,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Complete refresh of the layers',
         )
+        parser.add_argument(
+            '--destroy',
+            action='store_true',
+            help='Complete remove previous imported layers',
+        )
     skipping_models = [
         # 'ecafdan',
         # 'ecasuan',
@@ -209,6 +214,8 @@ class Command(BaseCommand):
         self.variables = list(map(lambda x: x.id, Variable.objects.only('id').all()))
         self.year_periods = list(map(lambda x: x.id, YearPeriod.objects.only('id').all()))
         self.timewindows = list(map(lambda x: x.id, TimeWindow.objects.only('id').all()))
+        if options['destroy']:
+            Map.objects.all().delete()
 
         # path = 'ensembletwbc/eca_cdd_an_avg_tw1_rcp85_MAM_ls.nc'
         # wmscap = getLayerAttributes(path)
