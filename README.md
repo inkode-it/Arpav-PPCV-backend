@@ -74,6 +74,8 @@ You need Docker or Docker-compose, get the latest stable official release for yo
 
 
     git clone https://github.com/inkode-it/Arpav-PPCV-backend`
+    cd Arpav-PPCV-backend
+    git clone https://github.com/inkode-it/Arpav-PPCV
 
 
 2) Copy `env.example` in `.env` and **customize it with your local settings**
