@@ -1,7 +1,6 @@
 # Backend - Piattaforma Proiezioni Climatiche per il Nord-Est
 
-#### Backend - Climate Projections Platform for North-Eastern Italy
-
+#### Climate Projections Platform for North-Eastern Italy - Backend structure for support future climates indicators and models outputs web service platform
 [![Piattaforma Proiezioni Climatiche per il Nord-Est](https://github.com/inkode-it/Arpav-PPCV/raw/main/public/img/screenshot.png)](https://clima.arpa.veneto.it/)
 
 ## About
@@ -15,10 +14,7 @@ Designed and developed in Italy by <br/>
 <a rel="author" href="https://inkode.it"><img src="https://avatars.githubusercontent.com/u/64135645" alt="INKODE soc coop"></a>
 
 
-# Project
-Backend structure for support future climates indicators and models outputs web service pllatform.
-
-# Structure: Docker services
+## Structure: Docker services
 ### Django
 Django, Django Rest Framework (DRF), and GeoDjango are used together to build web applications that require geospatial data processing and API development.
 
@@ -59,78 +55,146 @@ Root directory: `backend`
 #### Martin
 Martin Vector Tile Server is an open-source vector tile server that allows users to serve vector tiles over the web. It is built for MapLibre, an open-source JavaScript library for interactive maps, and supports a variety of data sources, including GeoJSON, PostGIS, and Shapefile. 
 
-# Create a custom project
-Follow the naming conventions for python packages, generally lower case with underscores (_).
-In the examples below, replace padoa-backend with whatever you would like to name your project.
-No need for a Python virtual environment, the project runs using Docker 
+## PRODUCTION USAGE
 
-- How to start your server using Docker
-
-You need Docker or Docker-compose, get the latest stable official release for your platform.
-
-## Procedure
-
-1) Prepare the Environment
-
-
-    git clone https://github.com/inkode-it/Arpav-PPCV-backend`
-    cd Arpav-PPCV-backend
-    git clone https://github.com/inkode-it/Arpav-PPCV
-
-
-2) Copy `env.example` in `.env` and **customize it with your local settings**
-
-
-3) Clone the Frontend repository inside this project and follow the instructions in the README.md file to start the frontend
-
-
-    `git clone https://github.com/inkode-it/Arpav-PPCV`
-
-
-4) Run docker-compose to start it up
+#### Clean build & start containers
 
     ```shell
     docker-compose build --no-cache
     docker-compose up -d
     ```    
 
-5) Build images & start containers:
+#### Build images & start containers:
 
     `docker-compose up --build -d`
 
 
-6) Make django migrations: 
+#### Make django migrations: 
 
-    `docker exec -ti backend.api python manage.py makemigrations`
+    `docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds`
 
 
-7) Migrate database:
+#### Migrate database:
 
     `docker exec -ti backend.api python manage.py migrate`
 
 
-8) Create a Super User to access the Django Admin interface:
+#### Create a Super User to access the Django Admin interface:
 
-    `docker exec -ti backend.api python manage.py import_super_user`
+    `docker exec -ti backend.api python manage.py createsuperuser`
+
+    NOTE: prompt for username, email, password
 
 
-9) To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
+#### To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
 
     `docker exec -ti backend.api python manage.py import_attributes`
 
 
-10) To collect all Municipalities (from the geojson) and define geographical boundaries:
+#### To collect all Municipalities (from the geojson) and define geographical boundaries:
 
      `docker exec -ti backend.api python manage.py import_regions`
 
 
-11) Scanning selected Threeds folders and copying metadata:
+#### Scanning selected Threeds folders and copying metadata:
 
     `docker exec -ti backend.api python manage.py import_layers`
 
-    NOTE: to update already imported layers, run the command with the `--refresh` flag
+    NOTES:
+    - to update already imported layers, run the command with the `--refresh` flag
+    - to fully clean layers and & re-import them, run the command with the `--destroy` flag
 
 
-12) Stop & destroy containers (note using `-v` will remove the volumes)
+#### Stop & destroy containers (note using `-v` will remove the volumes)
 
-    `docker-compose down`
+    `docker-compose -f docker-compose.dev.yml down`
+
+#### SSL certificates
+
+SSL certificate are mounted in the nginx container as a volume. The certificate files and the private key should be placed in the folder listed on .env file (NGINX_SSL_CERTS_PATH) and named as specified in .env file `SSL_CERTIFICATE` and `SSL_KEY`, note that certificate needs to be bundled with the full chain.
+
+# Development
+
+GIT BRANCH: `develop`
+
+#### Required tools for development
+
+For development on your local machine, you need to install the following tools:
+   - git
+   - docker
+   - docker-compose -f docker-compose.dev.yml
+   - a text editor or an IDE (Eg. Visual Studio Code)
+
+
+#### Prepare the Environment
+    
+    Starting from the root of the project, clone the backend repository, move on `develop` branch and clone frontend repository inside this project
+
+    
+    git clone https://github.com/inkode-it/Arpav-PPCV-backend
+    cd Arpav-PPCV-backend
+    git checkout develop
+    git clone https://github.com/inkode-it/Arpav-PPCV
+
+#### Copy `.env.example` in `.env` and **customize it with your local settings** both for the backend and the frontend.
+
+    NOTE: `.env`'s file are used to set the environment variables for the docker-compose -f docker-compose.dev.yml file and the running services, to configure the backend and frontend services, the PostGIS database, Nginx web server etc..
+
+
+#### For Frontend `Arpav-PPCV`, follow the instructions in the *frontend README.md file to start the frontend*
+
+    NOTE: Both `Arpav-PPCV-backend` & `Arpav-PPCV` (the frontend) have a different .env file configuration with different variables
+
+
+#### Run docker-compose to start it up
+
+    ```shell
+    docker-compose -f docker-compose.dev.yml build --no-cache
+    docker-compose -f docker-compose.dev.yml up -d
+    ```    
+
+#### Build images & start containers:
+
+    `docker-compose -f docker-compose.dev.yml up --build -d`
+
+
+#### Make django migrations: 
+
+    `docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds`
+
+#### Migrate database:
+
+    `docker exec -ti backend.api python manage.py migrate`
+
+
+#### Create a Super User to access the Django Admin interface:
+
+    `docker exec -ti backend.api python manage.py import_super_user`
+
+    NOTE: this super user is intended for development in local environment, default credential are:
+    - username: `info@inkode.it`
+    - password: `inkode`
+
+
+#### To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
+
+    `docker exec -ti backend.api python manage.py import_attributes`
+
+
+#### To collect all Municipalities (from the geojson) and define geographical boundaries:
+
+     `docker exec -ti backend.api python manage.py import_regions`
+
+
+#### Scanning selected Threeds folders and copying metadata:
+
+    `docker exec -ti backend.api python manage.py import_layers`
+
+    NOTES:
+    - to update already imported layers, run the command with the `--refresh` flag
+    - to fully clean layers and & re-import them, run the command with the `--destroy` flag
+
+
+If everything is ok and you followed also frontend README instructions, you should be able to access:
+- the frontend at http://localhost:3000
+- the backend administration at http://localhost/admin

@@ -63,7 +63,6 @@ class MapList(ListAPIView,OptionListModelMixin,GenericViewSet):
 
 class NCSSTimeserie(APIView, BaseRouter):
     permission_classes = (AllowAny,)
-    @method_decorator(cache_page(3600*7*24))
     def get(self, request):
         if(request.query_params.get('id')):
             ids = [request.query_params.get('id')]
